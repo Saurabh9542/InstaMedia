@@ -1,7 +1,7 @@
 import models
 import schemas
 import bcrypt
-
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 
@@ -10,24 +10,36 @@ def get_user(db: Session, user_id: int):
 
 
 def get_user_by_email(db: Session, email: str):
-    return db.query(models.SignUp).filter(models.SignUp.email == email).first()
+    return db.query(models.User).filter(models.User.email == email).first()
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).offset(skip).limit(limit).all()
+def get_users(db: Session):
+    return db.query(models.User).all()
+
+
+def get_posts_by_user(db: Session, user_id: int):
+    
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User does not exist with id-{user_id}")
+    
+    db_posts = db.query(models.Post).filter(models.Post.owner_id == user_id).all()
+    
+    return db_posts
 
 
 
-def get_items(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Item).offset(skip).limit(limit).all()
+def get_posts(db: Session):
+    return db.query(models.Post).all()
 
 
-def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-    db_item = models.Item(**item.dict(), owner_id=user_id)
-    db.add(db_item)
+def create_user_post(db: Session, post: schemas.PostCreate, user_id: int):
+    db_post = models.Post(**post.dict(), owner_id=user_id)
+    db.add(db_post)
     db.commit()
-    db.refresh(db_item)
-    return db_item
+    db.refresh(db_post)
+    return db_post
 
 
 def hash_password(plain_text: str):
@@ -40,17 +52,17 @@ def check_password(plain_text, hashed_password):
     return bcrypt.checkpw(plain_text.encode('utf-8'), hashed_password)
 
 
-def create_user(db: Session, user: schemas.SignUp):
+def create_user(db: Session, user: schemas.User):
     hashed_password = hash_password(user.password)
-    db_user = models.SignUp(email = user.email, password = hashed_password)
+    db_user = models.User(email = user.email, password = hashed_password, user_name = user.user_name)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user    
 
 
-def login(db: Session, user: schemas.SignUp):
-    db_user = db.query(models.SignUp).filter(models.SignUp.email == user.email).first()
+def login(db: Session, user: schemas.User):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
     if not db_user:
         return "User does not exist, please login!"
     print(f"=== {db_user.password} ====")

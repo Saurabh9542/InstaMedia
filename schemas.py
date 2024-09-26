@@ -1,19 +1,23 @@
 from pydantic import BaseModel, EmailStr
 
 
-class ItemBase(BaseModel):
+class PostBase(BaseModel):
     title: str
-    description: str | None = None
+    description: str
+    photo: str | None = None
 
 
-class ItemCreate(ItemBase):
+class PostCreate(PostBase):
     pass
 
 class SignUp(BaseModel):
     email: EmailStr
     password: str
+    user_name: str
 
-class Item(ItemBase):
+
+
+class Post(PostBase):
     id: int
     owner_id: int
 
@@ -25,14 +29,10 @@ class UserBase(BaseModel):
     email: str
 
 
-# class UserCreate(UserBase):
-#     password: str
-
-
 class User(UserBase):
     id: int
     is_active: bool
-    items: list[Item] = []
+    items: list[Post] = []
 
     class Config:
         orm_mode = True
