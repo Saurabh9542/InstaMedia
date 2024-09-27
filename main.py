@@ -5,7 +5,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine, create_access_token
+from database import SessionLocal, engine, create_access_token, verify_access_token
 
 models.Base.metadata.create_all(bind=engine)
 
