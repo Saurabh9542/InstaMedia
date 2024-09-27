@@ -3,7 +3,7 @@ import schemas
 import bcrypt
 from fastapi import HTTPException, security, Depends
 from sqlalchemy.orm import Session
-from database import verify_access_token
+from authorization import verify_access_token
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()

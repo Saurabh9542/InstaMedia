@@ -1,13 +1,14 @@
-import jwt
+import os
+from dotenv import load_dotenv
 from fastapi import HTTPException
-from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+load_dotenv()
 
 try:
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./testDB.db"
+    SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -23,33 +24,16 @@ except Exception as e:
 
 
 
-SECERET_KEY = "qwertyuiopasdfghjklzxcvbnm"
-ALGORITHM = "HS256"
-
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expiry = datetime.utcnow() + expires_delta
-    else:
-        expiry = datetime.utcnow() + timedelta(minutes=15)
-    
-    to_encode.update({"exp": expiry})
-    encoded_jwt = jwt.encode(to_encode, SECERET_KEY, algorithm = ALGORITHM)
-    print(encoded_jwt)
-    return encoded_jwt
 
 
-def verify_access_token(token:str):
+def get_db():
+    db = SessionLocal()
     try:
-        payload = jwt.decode(token, SECERET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("sub")
-        print(user_id)
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return user_id
+        yield db
+    finally:
+        db.close()
 
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+
 
         
 
