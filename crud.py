@@ -1,9 +1,9 @@
 import models
 import schemas
 import bcrypt
-from fastapi import HTTPException
+from fastapi import HTTPException, security, Depends
 from sqlalchemy.orm import Session
-
+from authorization import verify_access_token
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -65,10 +65,11 @@ def login(db: Session, user: schemas.User):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     if not db_user:
         return "User does not exist, please login!"
-    print(f"=== {db_user.password} ====")
     verify_passcode = check_password(user.password, db_user.password)
-    print(verify_passcode)
 
     if verify_passcode:
-        return "Welcome Sir, you are logged In."
+        return db_user
     return "Wrong Creds!"    
+
+
+
