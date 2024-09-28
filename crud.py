@@ -71,5 +71,3 @@ def login(db: Session, user: schemas.User):
         return db_user
     return "Wrong Creds!"    
 
-
-
