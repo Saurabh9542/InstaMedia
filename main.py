@@ -12,9 +12,6 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-
-
-
 @app.get("/users/", response_model=list[schemas.SignUp])
 def read_users(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     users = crud.get_users(db)
